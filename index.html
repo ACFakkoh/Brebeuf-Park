@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Brébeuf Park – Montreal Street Cleaning Reminder</title>
+  
+  <!-- Apple iOS Mobile Web App Meta -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Brébeuf Park">
+  <meta name="theme-color" content="#0a0e17">
+  
+  <!-- Favicon & Touch Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="app-brand">
+          <div class="brand-icon">🚗</div>
+          <h1 class="app-title">Brébeuf Parking</h1>
+        </div>
+        <div id="season-status-badge" class="status-pill active">
+          <span class="status-dot"></span> Active (Apr 1 – Dec 1)
+        </div>
+      </div>
+    </header>
+
+    <!-- Street Selector Section -->
+    <section class="street-selector-wrap">
+      <div class="section-title">Select Street</div>
+      <div class="street-chip-grid">
+        <button type="button" class="street-chip active" data-street="brebeuf">
+          <span class="street-chip-name">Rue de Brébeuf</span>
+        </button>
+        <button type="button" class="street-chip" data-street="chambord">
+          <span class="street-chip-name">Rue Chambord</span>
+        </button>
+        <button type="button" class="street-chip" data-street="lanaudiere">
+          <span class="street-chip-name">Rue de Lanaudière</span>
+        </button>
+        <button type="button" class="street-chip" data-street="roche">
+          <span class="street-chip-name">Rue de la Roche</span>
+        </button>
+        <button type="button" class="street-chip" data-street="christophe">
+          <span class="street-chip-name">Av. Christophe-Colomb</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Side Selector Segmented Control -->
+    <section class="side-selector-container">
+      <div class="section-title">Side of the Street</div>
+      <div class="side-segmented-control" role="group" aria-label="Side of Street">
+        <button type="button" class="side-btn" data-side="West">
+          <span>⬅️ West Side</span>
+        </button>
+        <button type="button" class="side-btn active" data-side="East">
+          <span>East Side ➡️</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Schedule Card -->
+    <main class="schedule-card">
+      
+      <!-- Street Heading -->
+      <div class="card-header-row">
+        <div class="street-heading">
+          <h2 id="selected-street-title" class="street-title-main">Rue de Brébeuf</h2>
+        </div>
+        <div class="side-badge-pill" id="selected-side-pill">Street Cleaning</div>
+      </div>
+
+      <!-- Time Highlight -->
+      <div class="cleaning-time-box">
+        <div class="time-row">
+          <div id="cleaning-day" class="cleaning-day-label">Thursday</div>
+          <div id="cleaning-time" class="cleaning-time-main">12:30 PM – 1:30 PM</div>
+        </div>
+        <div class="time-secondary-row">
+          <span class="direction-hint-text">🧭 <span id="direction-hint">Towards Papineau / Parc Laurier</span></span>
+          <span id="cleaning-time-24h">12h30 – 13h30</span>
+        </div>
+      </div>
+
+      <!-- Next Cleaning & Countdown -->
+      <div class="next-cleaning-container">
+        <div class="next-meta-row">
+          <span class="next-label">NEXT CLEANING</span>
+          <span id="countdown-badge" class="countdown-badge status-normal">Calculating...</span>
+        </div>
+        <div id="next-date-text" class="next-date-value">Loading...</div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="action-container">
+        <button type="button" id="btn-set-reminder" class="btn-reminder-primary">
+          <span>⏰</span> Set Reminder (2h Before)
+        </button>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Event ready!</div>
+
+  <!-- Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
