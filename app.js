@@ -235,11 +235,17 @@ function formatCountdown(targetDate, now = new Date()) {
   const diffSec = Math.floor(diffMs / 1000);
   const diffMin = Math.floor(diffSec / 60);
   const diffHours = Math.floor(diffMin / 60);
-  const diffDays = Math.floor(diffHours / 24);
   const remHours = diffHours % 24;
   const remMin = diffMin % 60;
   
-  if (diffDays === 0) {
+  // Use CALENDAR day difference (midnight to midnight), not hour-based.
+  // This correctly handles cases like: 17h away but on the next calendar day.
+  const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const targetMidnight = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+  const calDayDiff = Math.round((targetMidnight - nowMidnight) / (24 * 60 * 60 * 1000));
+  
+  if (calDayDiff === 0) {
+    // Same calendar day → "Today"
     if (diffHours === 0) {
       return { text: `In ${remMin} minute${remMin === 1 ? '' : 's'}`, status: "urgent" };
     }
@@ -249,11 +255,12 @@ function formatCountdown(targetDate, now = new Date()) {
     return { text: `Today at ${formatTimeStr(targetDate)} (in ${diffHours}h ${remMin}m)`, status: "warning" };
   }
   
-  if (diffDays === 1) {
-    return { text: `Tomorrow at ${formatTimeStr(targetDate)} (in ${diffHours}h)`, status: "warning" };
+  if (calDayDiff === 1) {
+    // Next calendar day → "Tomorrow" (even if only 6h away at 11 PM)
+    return { text: `Tomorrow at ${formatTimeStr(targetDate)} (in ${diffHours}h ${remMin}m)`, status: "warning" };
   }
   
-  return { text: `In ${diffDays} days, ${remHours} hours`, status: "normal" };
+  return { text: `In ${calDayDiff} days, ${remHours} hours`, status: "normal" };
 }
 
 function formatTimeStr(date) {
