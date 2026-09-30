@@ -119,6 +119,8 @@ async function checkServiceWorker() {
   let networkStatus = 200;
   let claimed = false;
   let skipped = false;
+  let hasLegacyCache = true;
+  const navigated = [];
   const cache = {
     async addAll(assets) { for (const asset of assets) cached.set(asset, new CheckResponse("offline")); },
     async put(request, response) { cached.set(request.url, response); },
@@ -128,11 +130,14 @@ async function checkServiceWorker() {
     URL, Response: CheckResponse,
     self: { registration: { scope },
       addEventListener(name, handler) { handlers[name] = handler; },
-      async skipWaiting() { skipped = true; }, clients: { async claim() { claimed = true; } }
+      async skipWaiting() { skipped = true; }, clients: {
+        async claim() { claimed = true; },
+        async matchAll() { return [scope, "https://example.com/another-app/"].map(url => ({ url, async navigate(target) { navigated.push(target); } })); }
+      }
     },
     caches: {
       async open(name) { assert.equal(name, cacheName); return cache; },
-      async keys() { return [cacheName, `brebeuf-park-${scope}-v1`, "brebeuf-park-v1", "another-app-cache"]; },
+      async keys() { return [cacheName, `brebeuf-park-${scope}-v1`, ...(hasLegacyCache ? ["brebeuf-park-v1"] : []), "another-app-cache"]; },
       async delete(key) { deleted.push(key); }
     },
     async fetch(request, options) {
@@ -150,6 +155,11 @@ async function checkServiceWorker() {
   await pending;
   assert.ok(claimed && deleted.includes("brebeuf-park-v1"));
   assert.ok(!deleted.includes("another-app-cache") && !deleted.includes(cacheName));
+  assert.deepEqual(navigated, [scope]);
+  hasLegacyCache = false;
+  handlers.activate({ waitUntil(promise) { pending = promise; } });
+  await pending;
+  assert.deepEqual(navigated, [scope]); // Later updates use the app's listener.
   async function request(url, mode = "cors", method = "GET") {
     const waits = [];
     let response;

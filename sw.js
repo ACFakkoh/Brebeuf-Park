@@ -7,9 +7,16 @@ self.addEventListener("install", event => {
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(
-    keys.filter(key => (key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME) || key === "brebeuf-park-v1").map(key => caches.delete(key))
-  )).then(() => self.clients.claim()));
+  event.waitUntil(caches.keys().then(async keys => {
+    const upgradingLegacyApp = keys.includes("brebeuf-park-v1");
+    await Promise.all(keys.filter(key => (key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME) || key === "brebeuf-park-v1").map(key => caches.delete(key)));
+    await self.clients.claim();
+    // The original app had no controllerchange listener to refresh its stale UI.
+    if (upgradingLegacyApp) {
+      const windows = await self.clients.matchAll({ type: "window" });
+      await Promise.all(windows.filter(client => client.url.startsWith(self.registration.scope)).map(client => client.navigate(client.url)));
+    }
+  }));
 });
 
 self.addEventListener("fetch", event => {
