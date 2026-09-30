@@ -1,442 +1,249 @@
-/**
- * Brébeuf & Perimeter Parking Reminder Engine
- * Accurate City of Montreal Signage Rules (April 1 - December 1)
- */
-
+// Perimeter schedules preserved from the project's existing signage data.
 const PARKING_DATA = {
-  "brebeuf": {
-    name: "Rue de Brébeuf",
-    shortName: "Brébeuf",
-    bounds: "Blvd Saint-Joseph to Rue Saint-Grégoire",
+  brebeuf: {
+    name: "Rue de Brébeuf", shortName: "Brébeuf",
+    bounds: "Saint-Joseph → Saint-Grégoire",
     sides: {
-      "East": {
-        day: "Thursday",
-        dayIndex: 4, // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-        startHour: 12,
-        startMin: 30,
-        endHour: 13,
-        endMin: 30,
-        timeFormatted: "12:30 PM – 1:30 PM",
-        time24h: "12h30 – 13h30",
-        directionHint: "Towards Papineau / Parc Laurier side",
-        signCode: "P 12h30-13h30 JEUDI 1 AVRIL AU 1 DEC",
-        notes: "Applies all the way from Blvd Saint-Joseph to Rue Saint-Grégoire along Parc Laurier."
-      },
-      "West": {
-        day: "Monday",
-        dayIndex: 1,
-        startHour: 13,
-        startMin: 0,
-        endHour: 14,
-        endMin: 0,
-        timeFormatted: "1:00 PM – 2:00 PM",
-        time24h: "13h00 – 14h00",
-        directionHint: "Towards Christophe-Colomb / Mountain",
-        signCode: "P 13h-14h LUNDI 1 AVRIL AU 1 DEC",
-        notes: "Applies between Blvd Saint-Joseph and Rue Gilford. Note: North of Gilford (along Parc Laurier), parking is prohibited at all times due to the REV bike path."
-      }
+      East: { dayIndex: 4, startHour: 12, startMin: 30, endHour: 13, endMin: 30,
+        directionHint: "Towards Papineau / Parc Laurier",
+        notes: "Along Parc Laurier, up to Saint-Grégoire." },
+      West: { dayIndex: 1, startHour: 13, startMin: 0, endHour: 14, endMin: 0,
+        directionHint: "Towards Christophe-Colomb / the mountain", bounds: "Saint-Joseph → Gilford",
+        notes: "North of Gilford, parking is prohibited at all times on the west side (REV bike path).", warning: true }
     }
   },
-  "chambord": {
-    name: "Rue Chambord",
-    shortName: "Chambord",
-    bounds: "Blvd Saint-Joseph to Rue Saint-Grégoire",
+  chambord: {
+    name: "Rue Chambord", shortName: "Chambord", bounds: "Saint-Joseph → Saint-Grégoire",
     sides: {
-      "East": {
-        day: "Monday",
-        dayIndex: 1,
-        startHour: 13,
-        startMin: 0,
-        endHour: 14,
-        endMin: 0,
-        timeFormatted: "1:00 PM – 2:00 PM",
-        time24h: "13h00 – 14h00",
-        directionHint: "Towards Lanaudière / Papineau",
-        signCode: "P 13h-14h LUNDI 1 AVRIL AU 1 DEC",
-        notes: "Applies consistently across all blocks from Saint-Joseph to Saint-Grégoire."
-      },
-      "West": {
-        day: "Wednesday",
-        dayIndex: 3,
-        startHour: 9,
-        startMin: 0,
-        endHour: 10,
-        endMin: 0,
-        timeFormatted: "9:00 AM – 10:00 AM",
-        time24h: "09h00 – 10h00",
-        directionHint: "Towards Brébeuf",
-        signCode: "P 9h-10h MERCREDI 1 AVRIL AU 1 DEC",
-        notes: "Applies consistently across all blocks from Saint-Joseph to Saint-Grégoire."
-      }
+      East: { dayIndex: 1, startHour: 13, startMin: 0, endHour: 14, endMin: 0, directionHint: "Towards Lanaudière / Papineau" },
+      West: { dayIndex: 3, startHour: 9, startMin: 0, endHour: 10, endMin: 0, directionHint: "Towards Brébeuf" }
     }
   },
-  "lanaudiere": {
-    name: "Rue de Lanaudière",
-    shortName: "Lanaudière",
-    bounds: "Blvd Saint-Joseph to Rue Saint-Grégoire",
+  lanaudiere: {
+    name: "Rue de Lanaudière", shortName: "Lanaudière", bounds: "Saint-Joseph → Saint-Grégoire",
     sides: {
-      "East": {
-        day: "Wednesday",
-        dayIndex: 3,
-        startHour: 8,
-        startMin: 30,
-        endHour: 9,
-        endMin: 30,
-        timeFormatted: "8:30 AM – 9:30 AM",
-        time24h: "08h30 – 09h30",
-        directionHint: "Towards Garnier / Papineau",
-        signCode: "P 8h30-9h30 MERCREDI 1 AVRIL AU 1 DEC",
-        notes: "Applies consistently across all blocks from Saint-Joseph to Saint-Grégoire."
-      },
-      "West": {
-        day: "Monday",
-        dayIndex: 1,
-        startHour: 12,
-        startMin: 30,
-        endHour: 13,
-        endMin: 30,
-        timeFormatted: "12:30 PM – 1:30 PM",
-        time24h: "12h30 – 13h30",
-        directionHint: "Towards Chambord",
-        signCode: "P 12h30-13h30 LUNDI 1 AVRIL AU 1 DEC",
-        notes: "Applies consistently across all blocks from Saint-Joseph to Saint-Grégoire."
-      }
+      East: { dayIndex: 3, startHour: 8, startMin: 30, endHour: 9, endMin: 30, directionHint: "Towards Garnier / Papineau" },
+      West: { dayIndex: 1, startHour: 12, startMin: 30, endHour: 13, endMin: 30, directionHint: "Towards Chambord" }
     }
   },
-  "roche": {
-    name: "Rue de la Roche",
-    shortName: "De la Roche",
-    bounds: "Blvd Saint-Joseph to Rue Gilford",
+  roche: {
+    name: "Rue de la Roche", shortName: "De la Roche", bounds: "Saint-Joseph → Gilford",
     sides: {
-      "East": {
-        day: "Thursday",
-        dayIndex: 4,
-        startHour: 12,
-        startMin: 0,
-        endHour: 13,
-        endMin: 0,
-        timeFormatted: "12:00 PM – 1:00 PM",
-        time24h: "12h00 – 13h00",
-        directionHint: "Towards Brébeuf",
-        signCode: "P 12h-13h JEUDI 1 AVRIL AU 1 DEC",
-        notes: "Applies between Saint-Joseph and Gilford (one mid-block section indicates 1:30 PM – 2:30 PM). Street ends at Gilford."
-      },
-      "West": {
-        day: "Tuesday",
-        dayIndex: 2,
-        startHour: 10,
-        startMin: 30,
-        endHour: 11,
-        endMin: 30,
-        timeFormatted: "10:30 AM – 11:30 AM",
-        time24h: "10h30 – 11h30",
-        directionHint: "Towards Christophe-Colomb",
-        signCode: "P 10h30-11h30 MARDI 1 AVRIL AU 1 DEC",
-        notes: "Applies between Saint-Joseph and Gilford. Street ends at Gilford."
-      }
+      East: { dayIndex: 4, startHour: 12, startMin: 0, endHour: 13, endMin: 0, directionHint: "Towards Brébeuf",
+        notes: "Heads up: one mid-block section has a different Thursday schedule, 1:30–2:30 PM. This reminder covers 12–1 PM: check your sign.", warning: true },
+      West: { dayIndex: 2, startHour: 10, startMin: 30, endHour: 11, endMin: 30, directionHint: "Towards Christophe-Colomb" }
     }
   },
-  "christophe": {
-    name: "Avenue Christophe-Colomb",
-    shortName: "Christophe-Colomb",
-    bounds: "Blvd Saint-Joseph to Rue Gilford",
+  christophe: {
+    name: "Avenue Christophe-Colomb", shortName: "Christophe-Colomb", bounds: "Saint-Joseph → Gilford",
     sides: {
-      "East": {
-        day: "Tuesday",
-        dayIndex: 2,
-        startHour: 10,
-        startMin: 0,
-        endHour: 11,
-        endMin: 0,
-        timeFormatted: "10:00 AM – 11:00 AM",
-        time24h: "10h00 – 11h00",
-        directionHint: "Towards De la Roche",
-        signCode: "P 10h-11h MARDI 1 AVRIL AU 1 DEC",
-        notes: "Applies between Saint-Joseph and Gilford. North of Gilford is No Parking at all times."
-      },
-      "West": {
-        day: "Thursday",
-        dayIndex: 4,
-        startHour: 12,
-        startMin: 0,
-        endHour: 13,
-        endMin: 0,
-        timeFormatted: "12:00 PM – 1:00 PM",
-        time24h: "12h00 – 13h00",
-        directionHint: "Towards Saint-Denis",
-        signCode: "P 12h-13h JEUDI 1 AVRIL AU 1 DEC",
-        notes: "Applies between Saint-Joseph and Gilford. North of Gilford is No Parking at all times."
-      }
+      East: { dayIndex: 2, startHour: 10, startMin: 0, endHour: 11, endMin: 0, directionHint: "Towards De la Roche",
+        notes: "North of Gilford, parking is prohibited at all times.", warning: true },
+      West: { dayIndex: 4, startHour: 12, startMin: 0, endHour: 13, endMin: 0, directionHint: "Towards Saint-Denis",
+        notes: "North of Gilford, parking is prohibited at all times.", warning: true }
     }
   }
 };
 
-// Current State
+const TIME_ZONE = "America/Toronto";
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const SIDE_NAMES = { East: "East", West: "West" };
+const montrealFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit",
+  hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23"
+});
 let currentStreetKey = "brebeuf";
 let currentSide = "East";
 
-// Helper: Check if date is in active season (Apr 1 - Dec 1)
-function isParkingSeason(date = new Date()) {
-  const month = date.getMonth(); // 0-indexed: 0=Jan, 3=Apr, 10=Nov, 11=Dec
-  const day = date.getDate();
-  if (month < 3) return false; // Jan, Feb, Mar -> Inactive
-  if (month > 11) return false; // > Dec
-  if (month === 11 && day > 1) return false; // Dec 2 onwards -> Inactive
-  return true;
+// A UTC Date carries Montréal's wall-clock fields, independent of the device zone.
+function montrealDate(date) {
+  const parts = Object.fromEntries(montrealFormatter.formatToParts(date).map(part => [part.type, part.value]));
+  return new Date(Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second));
 }
 
-// Compute the Next Cleaning Occurrence
+function montrealInstant(wallDate) {
+  let instant = new Date(wallDate);
+  for (let i = 0; i < 2; i++) {
+    instant = new Date(instant.getTime() + wallDate.getTime() - montrealDate(instant).getTime());
+  }
+  return instant;
+}
+
+function isParkingSeason(date = new Date()) {
+  const wall = montrealDate(date);
+  return wall.getUTCMonth() >= 3 && (wall.getUTCMonth() < 11 || wall.getUTCDate() === 1);
+}
+
+function getCleaningEnd(rule, start) {
+  const wall = montrealDate(start);
+  wall.setUTCHours(rule.endHour, rule.endMin, 0, 0);
+  return montrealInstant(wall);
+}
+
 function getNextCleaningDate(rule, referenceDate = new Date()) {
-  const now = new Date(referenceDate);
-  const targetDay = rule.dayIndex;
-  
-  // Start with candidate for today
-  let candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), rule.startHour, rule.startMin, 0, 0);
-  let cleaningEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), rule.endHour, rule.endMin, 0, 0);
-  
-  let daysUntil = (targetDay - now.getDay() + 7) % 7;
-  
-  if (daysUntil === 0) {
-    // It's today. Check if the cleaning window has already passed
-    if (now > cleaningEnd) {
-      daysUntil = 7; // Next week
-    }
-  }
-  
-  candidate.setDate(candidate.getDate() + daysUntil);
-  
-  // If candidate falls outside April 1 - Dec 1, advance to next April 1st
+  const wall = montrealDate(referenceDate);
+  wall.setUTCHours(rule.startHour, rule.startMin, 0, 0);
+  wall.setUTCDate(wall.getUTCDate() + (rule.dayIndex - wall.getUTCDay() + 7) % 7);
+  if (referenceDate >= getCleaningEnd(rule, montrealInstant(wall))) wall.setUTCDate(wall.getUTCDate() + 7);
+  let candidate = montrealInstant(wall);
   if (!isParkingSeason(candidate)) {
-    let year = candidate.getFullYear();
-    if (candidate.getMonth() >= 11) {
-      year += 1;
-    }
-    // Next April 1st
-    candidate = new Date(year, 3, 1, rule.startHour, rule.startMin, 0, 0);
-    // Adjust to next matching day of week on or after April 1st
-    let aprDaysUntil = (targetDay - candidate.getDay() + 7) % 7;
-    candidate.setDate(candidate.getDate() + aprDaysUntil);
+    const year = wall.getUTCFullYear() + (wall.getUTCMonth() === 11 ? 1 : 0);
+    wall.setUTCFullYear(year, 3, 1);
+    wall.setUTCDate(1 + (rule.dayIndex - wall.getUTCDay() + 7) % 7);
+    candidate = montrealInstant(wall);
   }
-  
   return candidate;
 }
 
-// Format relative countdown
-function formatCountdown(targetDate, now = new Date()) {
-  const diffMs = targetDate - now;
-  if (diffMs < 0) {
-    const endDiff = diffMs + (60 * 60 * 1000);
-    if (endDiff > 0) {
-      return { text: "IN PROGRESS NOW! Move car immediately", status: "urgent" };
-    }
-    return { text: "Just completed", status: "normal" };
-  }
-  
-  const diffSec = Math.floor(diffMs / 1000);
-  const diffMin = Math.floor(diffSec / 60);
-  const diffHours = Math.floor(diffMin / 60);
-  const remHours = diffHours % 24;
-  const remMin = diffMin % 60;
-  
-  // Use CALENDAR day difference (midnight to midnight), not hour-based.
-  // This correctly handles cases like: 17h away but on the next calendar day.
-  const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const targetMidnight = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-  const calDayDiff = Math.round((targetMidnight - nowMidnight) / (24 * 60 * 60 * 1000));
-  
-  if (calDayDiff === 0) {
-    // Same calendar day → "Today"
-    if (diffHours === 0) {
-      return { text: `In ${remMin} minute${remMin === 1 ? '' : 's'}`, status: "urgent" };
-    }
-    if (diffHours <= 2) {
-      return { text: `Today in ${diffHours}h ${remMin}m (Reminder time soon!)`, status: "urgent" };
-    }
-    return { text: `Today at ${formatTimeStr(targetDate)} (in ${diffHours}h ${remMin}m)`, status: "warning" };
-  }
-  
-  if (calDayDiff === 1) {
-    // Next calendar day → "Tomorrow" (even if only 6h away at 11 PM)
-    return { text: `Tomorrow at ${formatTimeStr(targetDate)} (in ${diffHours}h ${remMin}m)`, status: "warning" };
-  }
-  
-  return { text: `In ${calDayDiff} days, ${remHours} hours`, status: "normal" };
+function formatCountdown(targetDate, now, rule) {
+  const diff = targetDate - now;
+  if (diff <= 0 && now < getCleaningEnd(rule, targetDate)) return { text: "In progress · move your car", status: "urgent" };
+  if (diff <= 0) return { text: "Completed", status: "normal" };
+  const today = montrealDate(now);
+  const target = montrealDate(targetDate);
+  today.setUTCHours(0, 0, 0, 0);
+  target.setUTCHours(0, 0, 0, 0);
+  const days = (target - today) / 86400000;
+  const minutes = Math.ceil(diff / 60000);
+  if (minutes < 60) return { text: `In ${minutes} min`, status: "urgent" };
+  if (days === 0) return { text: "Today", status: diff <= 7200000 ? "urgent" : "warning" };
+  if (days === 1) return { text: "Tomorrow", status: "warning" };
+  return { text: `In ${days} days`, status: "normal" };
 }
 
 function formatTimeStr(date) {
-  return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+  return date.toLocaleTimeString("en-US", { timeZone: TIME_ZONE, hour: "numeric", minute: "2-digit", hour12: true });
 }
 
-function formatDateStr(date) {
-  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+function formatDateStr(date, now = new Date()) {
+  return date.toLocaleDateString("en-US", {
+    timeZone: TIME_ZONE, weekday: "long", month: "long", day: "numeric",
+    ...(montrealDate(date).getUTCFullYear() !== montrealDate(now).getUTCFullYear() ? { year: "numeric" } : {})
+  });
 }
 
-// Generate RFC 5545 iCalendar (.ics) string for the single next upcoming cleaning
+function formatSchedule(rule) {
+  const time = (hour, minute) => new Date(Date.UTC(2000, 0, 1, hour, minute)).toLocaleTimeString("en-US", {
+    timeZone: "UTC", hour: "numeric", minute: "2-digit", hour12: true
+  });
+  return `${time(rule.startHour, rule.startMin)} – ${time(rule.endHour, rule.endMin)}`;
+}
+
 function generateICS(streetName, side, rule, nextCleaning) {
-  const startDate = new Date(nextCleaning);
-  const endDate = new Date(nextCleaning);
-  endDate.setHours(rule.endHour, rule.endMin, 0, 0);
-  
-  // Format date to UTC for ICS: YYYYMMDDTHHMMSSZ
-  const formatICSDate = (d) => {
-    return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  };
-  
-  const dtStart = formatICSDate(startDate);
-  const dtEnd = formatICSDate(endDate);
-  const dtStamp = formatICSDate(new Date());
-  const uid = `cleaning-${Date.now()}-${Math.random().toString(36).substr(2, 9)}@brebeufpark`;
-  
-  const summary = `🚗 Move Car: Street Cleaning on ${streetName} (${side} side)`;
-  const description = `Montreal Street Cleaning on ${streetName} (${side} side).\\nSchedule: ${rule.timeFormatted} (${rule.signCode}).\\nReminder set for 2 hours prior to avoid a ticket!`;
-  const location = `${streetName}, Montreal, QC`;
-  
-  // TRIGGER:-PT2H sets the native alarm 2 hours prior!
-  return [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Brebeuf Parking App//EN',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
-    'BEGIN:VEVENT',
-    `UID:${uid}`,
-    `DTSTAMP:${dtStamp}`,
-    `DTSTART:${dtStart}`,
-    `DTEND:${dtEnd}`,
-    `SUMMARY:${summary}`,
-    `DESCRIPTION:${description}`,
-    `LOCATION:${location}`,
-    'STATUS:CONFIRMED',
-    'BEGIN:VALARM',
-    'ACTION:DISPLAY',
-    'DESCRIPTION:🚗 Move your car! Street cleaning starts in 2 hours!',
-    'TRIGGER:-PT2H',
-    'END:VALARM',
-    'END:VEVENT',
-    'END:VCALENDAR'
-  ].join('\r\n');
+  const stamp = date => date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const escape = text => text.replace(/\\/g, "\\\\").replace(/\r\n|\r|\n/g, "\\n").replace(/[,;]/g, char => "\\" + char);
+  const description = `Street cleaning: ${DAYS[rule.dayIndex]}, ${formatSchedule(rule)} (Montreal time).\nReminder 2 hours before. Check the signs where you park.${rule.notes ? "\n" + rule.notes : ""}`;
+  const lines = [
+    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Brebeuf Park//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "BEGIN:VEVENT",
+    `UID:${stamp(nextCleaning)}-${encodeURIComponent(streetName)}-${side}@brebeufpark`,
+    `DTSTAMP:${stamp(new Date())}`, `DTSTART:${stamp(nextCleaning)}`, `DTEND:${stamp(getCleaningEnd(rule, nextCleaning))}`,
+    `SUMMARY:${escape(`Move your car: ${streetName} (${SIDE_NAMES[side]} side)`)}`,
+    `DESCRIPTION:${escape(description)}`, `LOCATION:${escape(`${streetName}, Montréal, QC`)}`, "STATUS:CONFIRMED",
+    "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:Move your car: street cleaning starts in 2 hours.", "TRIGGER:-PT2H", "END:VALARM", "END:VEVENT", "END:VCALENDAR"
+  ];
+  // RFC 5545: fold at 75 UTF-8 bytes without splitting accented characters.
+  const encoder = new TextEncoder();
+  return lines.map(line => {
+    let folded = "", bytes = 0;
+    for (const char of line) {
+      const length = encoder.encode(char).length;
+      if (bytes + length > 75) { folded += "\r\n "; bytes = 1; }
+      folded += char;
+      bytes += length;
+    }
+    return folded;
+  }).join("\r\n") + "\r\n";
 }
 
-// Download or trigger .ics in iOS Safari
 function triggerCalendarReminder(streetName, side, rule, nextCleaning) {
-  const icsData = generateICS(streetName, side, rule, nextCleaning);
-  const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
-  const filename = `street_cleaning_${side.toLowerCase()}_side.ics`;
-  
-  // For iOS Safari: creating a blob URL and navigating or creating an <a> tag triggers Apple Calendar import modal
+  const blob = new Blob([generateICS(streetName, side, rule, nextCleaning)], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
-  link.download = filename;
+  link.download = `street-cleaning-${currentStreetKey}-${side.toLowerCase()}.ics`;
   document.body.appendChild(link);
   link.click();
-  
-  setTimeout(() => {
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, 1500);
+  setTimeout(() => { link.remove(); URL.revokeObjectURL(url); }, 60000);
 }
 
-// UI Update Function
 function updateUI() {
   const street = PARKING_DATA[currentStreetKey];
   const rule = street.sides[currentSide];
   const now = new Date();
-  const nextCleaning = getNextCleaningDate(rule, now);
-  const countdown = formatCountdown(nextCleaning, now);
-  
-  // Reminder time is 2 hours before cleaning start
-  const reminderTime = new Date(nextCleaning.getTime() - (2 * 60 * 60 * 1000));
-  
-  // Update Street Info
-  document.getElementById('selected-street-title').textContent = street.name;
-  
-  // Update Side Selection Pills
-  document.querySelectorAll('.side-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.side === currentSide);
+  const next = getNextCleaningDate(rule, now);
+  const countdown = formatCountdown(next, now, rule);
+  const inProgress = next <= now;
+  const reminder = new Date(next.getTime() - 7200000);
+  const text = (id, value) => { document.getElementById(id).textContent = value; };
+  document.getElementById("street-select").value = currentStreetKey;
+  document.querySelectorAll(".side-btn").forEach(button => {
+    const active = button.dataset.side === currentSide;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
   });
-  
-  // Update Street Buttons
-  document.querySelectorAll('.street-chip').forEach(chip => {
-    chip.classList.toggle('active', chip.dataset.street === currentStreetKey);
-  });
-  
-  // Schedule Card Info
-  document.getElementById('cleaning-day').textContent = rule.day;
-  document.getElementById('cleaning-time').textContent = rule.timeFormatted;
-  document.getElementById('cleaning-time-24h').textContent = rule.time24h;
-  document.getElementById('direction-hint').textContent = rule.directionHint;
-  
-  // Next cleaning details
-  document.getElementById('next-date-text').textContent = `${formatDateStr(nextCleaning)} at ${formatTimeStr(nextCleaning)}`;
-  
-  // Countdown
-  const countdownEl = document.getElementById('countdown-badge');
-  countdownEl.textContent = countdown.text;
-  countdownEl.className = `countdown-badge status-${countdown.status}`;
-  
-  // Active Season Badge
-  const seasonBadge = document.getElementById('season-status-badge');
-  if (isParkingSeason(now)) {
-    seasonBadge.className = 'status-pill active';
-    seasonBadge.innerHTML = '<span class="status-dot"></span> Active Parking Season (Apr 1 – Dec 1)';
-  } else {
-    seasonBadge.className = 'status-pill winter';
-    seasonBadge.innerHTML = '<span class="status-dot winter"></span> Winter Period (Signs Inactive until Apr 1)';
-  }
+  text("selected-street-title", `${street.shortName} · ${SIDE_NAMES[currentSide]}`);
+  text("direction-hint", rule.directionHint);
+  text("next-label", inProgress ? "Cleaning in progress" : "Next cleaning");
+  text("next-date-text", formatDateStr(next, now));
+  text("cleaning-time", formatSchedule(rule));
+  text("cleaning-day", DAYS[rule.dayIndex]);
+  text("countdown-badge", countdown.text);
+  document.getElementById("countdown-badge").className = `countdown-badge status-${countdown.status}`;
+  text("season-status-badge", isParkingSeason(now) ? "Cleaning season active" : "Outside cleaning season");
+  text("street-bounds", rule.bounds || street.bounds);
+  text("street-notes", rule.notes || "Cleaning schedule for this street section.");
+  document.querySelector(".street-notes").classList.toggle("warning", !!rule.warning);
+  document.getElementById("btn-set-reminder").disabled = inProgress;
+  text("reminder-detail", inProgress ? "Move your car now. The next reminder will be available when cleaning ends."
+    : reminder <= now ? "The 2-hour alert time has already passed. You can still add the event."
+    : `Alert at ${formatTimeStr(reminder)}, 2 hours before. Open the file and save this event in your calendar.`);
 }
 
-// Toast Feedback
+let toastTimeout;
 function showToast(message) {
-  const toast = document.getElementById('toast');
+  const toast = document.getElementById("toast");
   toast.textContent = message;
-  toast.classList.add('show');
-  if (navigator.vibrate) {
-    navigator.vibrate(30);
-  }
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 3500);
+  toast.classList.add("show");
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove("show"), 6000);
 }
 
-// Initialization and Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-  // Setup Street Buttons
-  document.querySelectorAll('.street-chip').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      currentStreetKey = btn.dataset.street;
-      if (navigator.vibrate) navigator.vibrate(15);
-      updateUI();
-    });
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem("brebeuf-selection"));
+    if (saved && Object.hasOwn(PARKING_DATA, saved.street) && Object.hasOwn(SIDE_NAMES, saved.side)) {
+      currentStreetKey = saved.street;
+      currentSide = saved.side;
+    }
+  } catch { /* Storage can be disabled or contain an old invalid value. */ }
+  function saveSelection() {
+    try { localStorage.setItem("brebeuf-selection", JSON.stringify({ street: currentStreetKey, side: currentSide })); } catch { /* Keep the app usable without storage. */ }
+    updateUI();
+  }
+  document.getElementById("street-select").addEventListener("change", event => {
+    currentStreetKey = event.target.value;
+    saveSelection();
   });
-  
-  // Setup Side Buttons (East / West)
-  document.querySelectorAll('.side-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      currentSide = btn.dataset.side;
-      if (navigator.vibrate) navigator.vibrate(15);
-      updateUI();
-    });
-  });
-  
-  // Setup Set Reminder Button
-  document.getElementById('btn-set-reminder').addEventListener('click', () => {
+  document.querySelectorAll(".side-btn").forEach(button => button.addEventListener("click", () => {
+    currentSide = button.dataset.side;
+    saveSelection();
+  }));
+  document.getElementById("btn-set-reminder").addEventListener("click", () => {
     const street = PARKING_DATA[currentStreetKey];
     const rule = street.sides[currentSide];
-    const nextCleaning = getNextCleaningDate(rule, new Date());
-    
-    triggerCalendarReminder(street.name, currentSide, rule, nextCleaning);
-    showToast(`📅 Calendar event ready! Tap 'Add' to save the 2-hour reminder.`);
+    const now = new Date();
+    const next = getNextCleaningDate(rule, now);
+    updateUI();
+    if (next <= now) return;
+    triggerCalendarReminder(street.name, currentSide, rule, next);
+    showToast("Calendar file ready. Open it and save the event to activate the reminder.");
   });
-  
-  // Initial Render
   updateUI();
-  
-  // Refresh countdown every 30 seconds
   setInterval(updateUI, 30000);
-  
-  // Register Service Worker for offline capability
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) updateUI(); });
+  if ("serviceWorker" in navigator) {
+    const alreadyControlled = !!navigator.serviceWorker.controller;
+    if (alreadyControlled) navigator.serviceWorker.addEventListener("controllerchange", () => window.location.reload(), { once: true });
+    navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).catch(error => console.warn("Offline mode unavailable", error));
   }
 });

@@ -1,13 +1,13 @@
 {
-  "name": "Brébeuf Parking - Street Cleaning Reminder",
+  "name": "Brébeuf Park — Street cleaning reminders",
   "short_name": "Brébeuf Park",
-  "description": "Montreal street cleaning reminders for Rue de Brébeuf perimeter (St-Joseph to St-Grégoire).",
+  "description": "Street cleaning schedules and parking reminders around Brébeuf, Montreal.",
+  "lang": "en-CA",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0a0e1a",
-  "theme_color": "#0a0e1a",
-  "orientation": "portrait-primary",
+  "background_color": "#f4f6f9",
+  "theme_color": "#f4f6f9",
   "icons": [
     {
       "src": "icon-192.png",
