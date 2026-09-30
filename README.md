@@ -4,7 +4,7 @@
 
 Choose a street and side to see the next cleaning window. **Add to calendar** downloads one event with a 2-hour alert; open the file and save it in your calendar. The app remembers your selection and works offline after the first visit.
 
-All dates use Montreal time, including when your device is in another timezone. Schedules are the existing project's signage snapshot, not a live city feed. Check the signs where you park; street-specific exceptions are shown below the schedule.
+All dates use Montreal time, including when your device is in another timezone. Schedules are the existing project's signage snapshot, not a live city feed. Check the signs where you park; street-specific exceptions are included in the calendar event.
 
 No dependencies or build step:
 

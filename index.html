@@ -12,8 +12,8 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=2">
-  <script src="app.js?v=2" defer></script>
+  <link rel="stylesheet" href="style.css?v=3">
+  <script src="app.js?v=3" defer></script>
 </head>
 <body>
   <main class="app-container">
@@ -21,46 +21,39 @@
       <div class="brand-icon" aria-hidden="true">P</div>
       <div>
         <h1>Brébeuf Park</h1>
-        <p>A reminder before you move your car.</p>
       </div>
     </header>
 
     <section class="selection-card" aria-label="Your parking spot">
-      <label for="street-select">Where did you park?</label>
-      <select id="street-select">
-        <option value="brebeuf">Rue de Brébeuf</option>
-        <option value="chambord">Rue Chambord</option>
-        <option value="lanaudiere">Rue de Lanaudière</option>
-        <option value="roche">Rue de la Roche</option>
-        <option value="christophe">Avenue Christophe-Colomb</option>
-      </select>
+      <h2 class="selection-label">Where did you park?</h2>
+      <div class="street-button-grid" role="group" aria-label="Street">
+        <button type="button" class="street-btn active" data-street="brebeuf" aria-pressed="true">Rue de Brébeuf</button>
+        <button type="button" class="street-btn" data-street="chambord" aria-pressed="false">Rue Chambord</button>
+        <button type="button" class="street-btn" data-street="lanaudiere" aria-pressed="false">Rue de Lanaudière</button>
+        <button type="button" class="street-btn" data-street="roche" aria-pressed="false">Rue de la Roche</button>
+        <button type="button" class="street-btn" data-street="christophe" aria-pressed="false">Avenue Christophe-Colomb</button>
+      </div>
       <div class="side-segmented-control" role="group" aria-label="Side of the street">
         <button type="button" class="side-btn" data-side="West" aria-pressed="false">West side</button>
         <button type="button" class="side-btn active" data-side="East" aria-pressed="true">East side</button>
       </div>
-      <p id="direction-hint" class="direction-hint">Loading…</p>
     </section>
 
-    <section class="schedule-card" aria-labelledby="selected-street-title">
+    <section class="schedule-card" aria-labelledby="next-label">
       <div class="card-header-row">
-        <h2 id="selected-street-title">Rue de Brébeuf · East</h2>
+        <h2 id="next-label" class="eyebrow">Next cleaning</h2>
         <span id="countdown-badge" class="countdown-badge">Loading…</span>
       </div>
-      <p id="next-label" class="eyebrow">Next cleaning</p>
       <p id="next-date-text" class="next-date">Loading…</p>
       <p id="cleaning-time" class="cleaning-time">—</p>
-      <p class="schedule-detail">Every <span id="cleaning-day">Thursday</span> · April 1 – December 1</p>
-      <div class="season-row"><span id="season-status-badge">Loading…</span><span>Montreal time</span></div>
-      <button type="button" id="btn-set-reminder" class="btn-reminder" disabled>Add to calendar <span aria-hidden="true">↗</span></button>
-      <p id="reminder-detail" class="reminder-detail">One reminder, 2 hours before this cleaning.</p>
+      <p id="season-status-badge" class="schedule-detail">April 1 – December 1 · Montreal time</p>
+      <button type="button" id="btn-set-reminder" class="btn-reminder" disabled>
+        <span class="reminder-label">Add to calendar<small id="reminder-detail">Alert 2 hours before</small></span>
+        <span aria-hidden="true">↗</span>
+      </button>
     </section>
 
-    <aside class="street-notes" aria-label="Street section">
-      <p id="street-bounds" class="street-bounds"></p>
-      <p id="street-notes"></p>
-    </aside>
-    <footer>Check the signs where you park, including temporary restrictions.<br><a href="https://donnees.montreal.ca/en/dataset/stationnement-sur-rue-signalisation-courant" target="_blank" rel="noopener noreferrer">Source: Ville de Montréal</a> <span class="version">· v2</span></footer>
-    <noscript><p class="street-notes">Enable JavaScript to see schedules and create a reminder.</p></noscript>
+    <noscript><p>Enable JavaScript to see schedules and create a reminder.</p></noscript>
   </main>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>

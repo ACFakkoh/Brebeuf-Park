@@ -97,7 +97,7 @@ function getNextCleaningDate(rule, referenceDate = new Date()) {
 
 function formatCountdown(targetDate, now, rule) {
   const diff = targetDate - now;
-  if (diff <= 0 && now < getCleaningEnd(rule, targetDate)) return { text: "In progress · move your car", status: "urgent" };
+  if (diff <= 0 && now < getCleaningEnd(rule, targetDate)) return { text: "In progress", status: "urgent" };
   if (diff <= 0) return { text: "Completed", status: "normal" };
   const today = montrealDate(now);
   const target = montrealDate(targetDate);
@@ -111,13 +111,9 @@ function formatCountdown(targetDate, now, rule) {
   return { text: `In ${days} days`, status: "normal" };
 }
 
-function formatTimeStr(date) {
-  return date.toLocaleTimeString("en-US", { timeZone: TIME_ZONE, hour: "numeric", minute: "2-digit", hour12: true });
-}
-
 function formatDateStr(date, now = new Date()) {
   return date.toLocaleDateString("en-US", {
-    timeZone: TIME_ZONE, weekday: "long", month: "long", day: "numeric",
+    timeZone: TIME_ZONE, weekday: "long", month: "short", day: "numeric",
     ...(montrealDate(date).getUTCFullYear() !== montrealDate(now).getUTCFullYear() ? { year: "numeric" } : {})
   });
 }
@@ -175,28 +171,24 @@ function updateUI() {
   const inProgress = next <= now;
   const reminder = new Date(next.getTime() - 7200000);
   const text = (id, value) => { document.getElementById(id).textContent = value; };
-  document.getElementById("street-select").value = currentStreetKey;
+  document.querySelectorAll(".street-btn").forEach(button => {
+    const active = button.dataset.street === currentStreetKey;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
   document.querySelectorAll(".side-btn").forEach(button => {
     const active = button.dataset.side === currentSide;
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
-  text("selected-street-title", `${street.shortName} · ${SIDE_NAMES[currentSide]}`);
-  text("direction-hint", rule.directionHint);
   text("next-label", inProgress ? "Cleaning in progress" : "Next cleaning");
   text("next-date-text", formatDateStr(next, now));
   text("cleaning-time", formatSchedule(rule));
-  text("cleaning-day", DAYS[rule.dayIndex]);
   text("countdown-badge", countdown.text);
   document.getElementById("countdown-badge").className = `countdown-badge status-${countdown.status}`;
-  text("season-status-badge", isParkingSeason(now) ? "Cleaning season active" : "Outside cleaning season");
-  text("street-bounds", rule.bounds || street.bounds);
-  text("street-notes", rule.notes || "Cleaning schedule for this street section.");
-  document.querySelector(".street-notes").classList.toggle("warning", !!rule.warning);
+  text("season-status-badge", `${isParkingSeason(now) ? "April 1 – December 1" : "Outside cleaning season"} · Montreal time`);
   document.getElementById("btn-set-reminder").disabled = inProgress;
-  text("reminder-detail", inProgress ? "Move your car now. The next reminder will be available when cleaning ends."
-    : reminder <= now ? "The 2-hour alert time has already passed. You can still add the event."
-    : `Alert at ${formatTimeStr(reminder)}, 2 hours before. Open the file and save this event in your calendar.`);
+  text("reminder-detail", inProgress ? "Move your car now" : reminder <= now ? "2-hour alert time has passed" : "Alert 2 hours before");
 }
 
 let toastTimeout;
@@ -220,10 +212,10 @@ document.addEventListener("DOMContentLoaded", () => {
     try { localStorage.setItem("brebeuf-selection", JSON.stringify({ street: currentStreetKey, side: currentSide })); } catch { /* Keep the app usable without storage. */ }
     updateUI();
   }
-  document.getElementById("street-select").addEventListener("change", event => {
-    currentStreetKey = event.target.value;
+  document.querySelectorAll(".street-btn").forEach(button => button.addEventListener("click", () => {
+    currentStreetKey = button.dataset.street;
     saveSelection();
-  });
+  }));
   document.querySelectorAll(".side-btn").forEach(button => button.addEventListener("click", () => {
     currentSide = button.dataset.side;
     saveSelection();

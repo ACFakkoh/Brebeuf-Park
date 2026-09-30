@@ -19,6 +19,7 @@ function element(id) {
   return elements.get(id);
 }
 const sides = ["West", "East"].map(side => Object.assign(element(side), { dataset: { side } }));
+const streets = ["brebeuf", "chambord", "lanaudiere", "roche", "christophe"].map(street => Object.assign(element(street), { dataset: { street } }));
 let initialize;
 let stored = '{"street":"__proto__","side":"East"}';
 const context = vm.createContext({
@@ -26,7 +27,7 @@ const context = vm.createContext({
   setInterval() {}, setTimeout() {}, clearTimeout() {},
   localStorage: { getItem() { return stored; }, setItem(key, value) { stored = value; } },
   document: {
-    getElementById: element, querySelector: element, querySelectorAll() { return sides; },
+    getElementById: element, querySelectorAll(selector) { return selector === ".street-btn" ? streets : sides; },
     addEventListener(type, handler) { if (type === "DOMContentLoaded") initialize = handler; }
   }
 });
@@ -82,19 +83,25 @@ for (const line of ics.split("\r\n")) assert.ok(Buffer.byteLength(line) <= 75);
 assert.equal(unfolded.match(/^UID:.*$/m)[0], e.generateICS("Rue, Brébeuf; \\ test", "East", rule, next).replace(/\r\n /g, "").match(/^UID:.*$/m)[0]);
 
 initialize(); // Invalid stored keys must fall back safely.
-assert.equal(element("street-select").value, "brebeuf");
+assert.equal(element("brebeuf").attributes["aria-pressed"], "true");
 assert.equal(element("btn-set-reminder").disabled, true);
 assert.equal(element("East").attributes["aria-pressed"], "true");
 now = "2026-10-01T17:30:00Z";
 e.updateUI();
 assert.equal(element("btn-set-reminder").disabled, false);
 element("West").listeners.click();
-assert.match(element("street-notes").textContent, /prohibited at all times/);
-assert.equal(element("street-bounds").textContent, "Saint-Joseph → Gilford");
+assert.equal(element("cleaning-time").textContent, "1:00 PM – 2:00 PM");
 assert.equal(JSON.parse(stored).side, "West");
-element("street-select").listeners.change({ target: { value: "roche" } });
+element("roche").listeners.click();
 element("East").listeners.click();
-assert.match(element("street-notes").textContent, /1:30–2:30 PM/);
+assert.equal(element("cleaning-time").textContent, "12:00 PM – 1:00 PM");
+assert.match(e.generateICS("Rue de la Roche", "East", e.PARKING_DATA.roche.sides.East, next).replace(/\r\n /g, ""), /1:30–2:30 PM/);
+for (const button of streets) {
+  button.listeners.click();
+  assert.equal(JSON.parse(stored).street, button.dataset.street);
+  assert.equal(button.attributes["aria-pressed"], "true");
+  assert.equal(streets.filter(street => street.attributes["aria-pressed"] === "true").length, 1);
+}
 stored = "invalid JSON";
 assert.doesNotThrow(initialize);
 context.localStorage.getItem = () => { throw new Error("Storage blocked"); };
@@ -112,7 +119,7 @@ async function checkServiceWorker() {
   }
   const handlers = {};
   const scope = "https://example.com/Brebeuf-Park/";
-  const cacheName = `brebeuf-park-${scope}-v2`;
+  const cacheName = `brebeuf-park-${scope}-v3`;
   const cached = new Map();
   const deleted = [];
   let networkFails = false;
@@ -137,7 +144,7 @@ async function checkServiceWorker() {
     },
     caches: {
       async open(name) { assert.equal(name, cacheName); return cache; },
-      async keys() { return [cacheName, `brebeuf-park-${scope}-v1`, ...(hasLegacyCache ? ["brebeuf-park-v1"] : []), "another-app-cache"]; },
+      async keys() { return [cacheName, `brebeuf-park-${scope}-v2`, ...(hasLegacyCache ? ["brebeuf-park-v1"] : []), "another-app-cache"]; },
       async delete(key) { deleted.push(key); }
     },
     async fetch(request, options) {
@@ -150,10 +157,11 @@ async function checkServiceWorker() {
   let pending;
   handlers.install({ waitUntil(promise) { pending = promise; } });
   await pending;
-  assert.ok(skipped && cached.has("./app.js?v=2") && cached.has("./style.css?v=2"));
+  assert.ok(skipped && cached.has("./app.js?v=3") && cached.has("./style.css?v=3"));
   handlers.activate({ waitUntil(promise) { pending = promise; } });
   await pending;
   assert.ok(claimed && deleted.includes("brebeuf-park-v1"));
+  assert.ok(deleted.includes(`brebeuf-park-${scope}-v2`));
   assert.ok(!deleted.includes("another-app-cache") && !deleted.includes(cacheName));
   assert.deepEqual(navigated, [scope]);
   hasLegacyCache = false;
@@ -170,7 +178,7 @@ async function checkServiceWorker() {
     await Promise.all(waits);
     return result;
   }
-  const url = scope + "app.js?v=2";
+  const url = scope + "app.js?v=3";
   assert.equal(await (await request(url)).text(), "fresh");
   networkFails = true;
   assert.equal(await (await request(url)).text(), "fresh");
